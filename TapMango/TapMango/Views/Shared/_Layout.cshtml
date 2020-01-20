@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tapmango</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top wd-header-container">
+        <div class="navbar-header">
+            @Html.ActionLink("Tapmango", "Index", "Main", new { area = "" }, new { @class = "navbar-brand" })
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr style="border-bottom:2px solid #3f48cc;" />
+    </div>
+    <div class="right-panel-container">
+        <div class="right-panel-item">
+            <a href="https://www.linkedin.com/in/yao-wen-kok-102976121/">
+                <img src="/Content/ResourceImages/LI-Logo.png">
+            </a>
+        </div>
+        <div class="right-panel-item">
+            <a href="https://github.com/YaoWen728">
+                <img src="/Content/ResourceImages/GitHub_Logo.png">
+            </a>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/Scripts/CustomScripts/js/")
+    @Scripts.Render("~/Scripts/ThirdParty/js/")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

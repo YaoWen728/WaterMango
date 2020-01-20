@@ -1,0 +1,133 @@
+﻿@model TapMango.Models.Main.MainModel
+
+@{
+    List<decimal> nextEventList = new List<decimal>();
+}
+
+<div class="container-wrapper">
+    <div id="banner-stage">
+        @foreach (var tapMangoPlant in Model.TapMangoPlants)
+        {
+            <div id="banner-stage-@tapMangoPlant.Id" data-tapmangoplantid="@tapMangoPlant.Id" class="banner-stage-container">
+                <div class="banner-overlay action-overlay">
+                    <div class="banner-overlay-button banner-overlay-left">
+                        <a class="material-icons" title="Water">filter_vintage</a>
+                    </div>
+                    <div class="banner-overlay-button banner-overlay-right">
+                        <a class="material-icons" title="Stop">clear</a>
+                    </div>
+                </div>
+                <div class="banner-overlay warning-overlay"></div>
+                <img class="banner-item" src="@tapMangoPlant.Uri">
+            </div>
+        }
+    </div>
+
+    <div id="status">
+        @foreach (var tapMangoPlant in Model.TapMangoPlants)
+        {
+            <div id="status-@tapMangoPlant.Id" data-tapmangoplantid="@tapMangoPlant.Id" class="status-container">
+                @{
+                    var now = DateTime.Now;
+                    DateTime? lastCompleteOn = null;
+                    decimal wateringSessionTimeLeft = 0;
+                    decimal waterAgainTimeLeft = 0;
+                    string status = "Needs Watering";
+                    string statusCss = "";
+                    var currentSession = tapMangoPlant.Sessions.FirstOrDefault();
+
+                    if (currentSession == null)
+                    {
+                        lastCompleteOn = null;
+                    }
+                    else if (currentSession.StatusId == 2)
+                    {
+                        // if stopped watering
+
+                        lastCompleteOn = tapMangoPlant.Sessions.Count > 2 ? tapMangoPlant.Sessions[1].ExpectToCompleteOn : (DateTime?)null;
+                        status = "Stopped Watering";
+                    }
+                    else if (now < currentSession.ExpectToCompleteOn && now >= currentSession.StartTime)
+                    {
+                        // is within watering session, StatusId == 1
+
+                        lastCompleteOn = tapMangoPlant.Sessions.Count > 2 ? tapMangoPlant.Sessions[1].ExpectToCompleteOn : (DateTime?)null;
+                        wateringSessionTimeLeft = Convert.ToDecimal((currentSession.ExpectToCompleteOn - now).Ticks) / 10000;
+                        status = "Watering";
+                    }
+                    else if (now > currentSession.ExpectToCompleteOn)
+                    {
+                        // completed watering session, StatusId == 1
+
+                        lastCompleteOn = currentSession.ExpectToCompleteOn;
+                        status = "OK";
+                    }
+
+                    //start building necessary css
+                    statusCss = "status-" + status.Replace(" ", "-").ToLower();
+                    if (lastCompleteOn != null)
+                    {
+                        var waterAgain = lastCompleteOn.Value.AddHours(6);
+                        waterAgainTimeLeft = Convert.ToDecimal((waterAgain - now).Ticks) / 10000;
+
+                        if (waterAgain < now)
+                        {
+                            if (status == "OK")
+                            {
+                                //replace if status ok
+
+                                status = "Needs Watering";
+                                statusCss = "status-" + status.Replace(" ", "-").ToLower();
+                                statusCss += " past-due";
+                            }
+                            else
+                            {
+                                statusCss += " past-due";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        statusCss += " past-due";
+                    }
+                }
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input class="form-control" readonly value="@tapMangoPlant.Name">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <input class="status-input form-control @statusCss" readonly data-wateringsessiontimeleft="@wateringSessionTimeLeft"
+                               data-wateragaintimeleft="@waterAgainTimeLeft" value="@status">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Last complete</label>
+                        <input class="form-control" readonly value="@(lastCompleteOn)">
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+    <div id="banner-selector">
+        @foreach (var tapMangoPlant in Model.TapMangoPlants)
+        {
+            <div id="banner-selector-@tapMangoPlant.Id" data-tapmangoplantid="@tapMangoPlant.Id" class="banner-selector-container">
+                <div class="banner-overlay warning-overlay"></div>
+                <a><img src="@tapMangoPlant.Uri"></a>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    window.onload = function () {
+        tapMango.init();
+    }
+</script>
